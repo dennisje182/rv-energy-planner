@@ -5,11 +5,589 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="A practical RV energy planning pilot for battery, solar, appliances and campsite power.">
     <title>RV Energy Planner, pilot</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <style>
+:root {
+  --ink: #07364d;
+  --blue: #0086cd;
+  --blue-dark: #00679f;
+  --blue-soft: #eaf6fc;
+  --green: #087c5e;
+  --green-soft: #e8f7f1;
+  --amber: #a45a00;
+  --amber-soft: #fff4df;
+  --red: #b42318;
+  --red-soft: #fff0ee;
+  --line: #d8e2e7;
+  --slate: #556772;
+  --canvas: #f4f8fa;
+  --card: #ffffff;
+  --shadow: 0 10px 30px rgba(7, 54, 77, .08);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--canvas); color: var(--ink); font: 16px/1.5 Inter, Aptos, Arial, sans-serif; }
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+a { color: var(--blue-dark); }
+.skip-link { position: fixed; left: 1rem; top: -4rem; z-index: 10; background: #fff; padding: .65rem .9rem; border-radius: .4rem; }
+.skip-link:focus { top: 1rem; }
+.shell { min-height: 100vh; }
+.hero { background: linear-gradient(130deg, #002c43, #006b9f); color: white; padding: 1.3rem max(1.25rem, calc((100% - 1180px) / 2)) 2.6rem; }
+.topline, .nav, .container { max-width: 1180px; margin-inline: auto; }
+.topline { display: flex; justify-content: space-between; align-items: center; gap: 1rem; font-size: .86rem; color: #cce8f7; }
+.pilot { border: 1px solid rgba(255,255,255,.45); border-radius: 999px; padding: .22rem .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; font-size: .7rem; }
+.hero h1 { max-width: 760px; margin: 2.7rem 0 .65rem; font-size: clamp(2.2rem, 5vw, 4.1rem); line-height: 1; letter-spacing: -.045em; }
+.hero p { max-width: 680px; color: #d9eff9; font-size: 1.05rem; margin: 0; }
+.nav { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: 2rem; }
+.nav button { border: 1px solid rgba(255,255,255,.32); background: transparent; border-radius: .65rem; padding: .7rem .9rem; color: white; font-weight: 700; }
+.nav button.active, .nav button:hover { background: white; color: var(--ink); }
+.container { padding: 1.3rem 1.25rem 4rem; }
+.notice { display: flex; gap: .8rem; align-items: start; margin-bottom: 1.25rem; background: #e8f3f9; border-left: 4px solid var(--blue); padding: .85rem 1rem; color: #17475c; }
+.notice strong { display: block; }
+.view { display: none; }
+.view.active { display: block; }
+.section-heading { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin: 1.6rem 0 .8rem; }
+.section-heading h2 { margin: 0; font-size: clamp(1.55rem, 2.5vw, 2.1rem); letter-spacing: -.03em; }
+.section-heading p { margin: .25rem 0 0; color: var(--slate); max-width: 700px; }
+.grid { display: grid; gap: 1rem; }
+.grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 1rem; box-shadow: var(--shadow); padding: 1.15rem; }
+.card h3 { margin: 0 0 .45rem; font-size: 1rem; }
+.card p { margin: 0; color: var(--slate); }
+.card.step { position: relative; padding-top: 1.25rem; }
+.eyebrow { margin: 0 0 .35rem; color: var(--blue-dark); font-size: .76rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.choice { border: 2px solid var(--line); transition: border .15s, transform .15s; text-align: left; }
+.choice:hover { transform: translateY(-2px); border-color: var(--blue); }
+.choice strong { display: block; margin-bottom: .35rem; }
+.form-card { margin-top: 1rem; }
+.form-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .8rem; }
+.form-grid.compact { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+label { display: grid; gap: .3rem; color: #274b5d; font-size: .84rem; font-weight: 700; }
+input, select { width: 100%; border: 1px solid #b8c8d0; border-radius: .5rem; background: #fff; color: var(--ink); min-height: 2.55rem; padding: .5rem .62rem; }
+input:focus, select:focus, button:focus-visible { outline: 3px solid rgba(0,134,205,.3); outline-offset: 2px; }
+.hint { margin: .65rem 0 0; color: var(--slate); font-size: .84rem; }
+.button, .button-secondary, .button-danger { border-radius: .55rem; min-height: 2.55rem; padding: .55rem .9rem; border: 1px solid transparent; font-weight: 800; }
+.button { background: var(--blue); color: #fff; }
+.button:hover { background: var(--blue-dark); }
+.button-secondary { background: #fff; color: var(--blue-dark); border-color: var(--blue); }
+.button-danger { background: #fff; color: var(--red); border-color: #f4b4ae; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: .65rem; margin-top: 1rem; }
+.appliance { border: 1px solid var(--line); border-radius: .8rem; padding: .9rem; margin-top: .8rem; background: #fcfeff; }
+.appliance-top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: .65rem; }
+.appliance-top strong { color: var(--ink); }
+.appliance .form-grid { grid-template-columns: 1.4fr 1.15fr repeat(4, minmax(0, .76fr)) 1.1fr; }
+.inline-note { background: #f5f8fa; border-radius: .55rem; padding: .65rem .75rem; margin-top: .7rem; font-size: .84rem; color: #3d5664; }
+.status { border-radius: .55rem; display: inline-flex; align-items: center; gap: .35rem; padding: .32rem .55rem; font-size: .78rem; font-weight: 800; }
+.status.ok { background: var(--green-soft); color: var(--green); }
+.status.warn { background: var(--amber-soft); color: var(--amber); }
+.status.alert { background: var(--red-soft); color: var(--red); }
+.status.estimate { background: var(--blue-soft); color: var(--blue-dark); }
+.results { margin-top: 1rem; }
+.metric { padding: 1rem; background: #fff; border: 1px solid var(--line); border-radius: .85rem; }
+.metric .value { margin: .35rem 0 .1rem; font-size: 1.75rem; line-height: 1; font-weight: 850; letter-spacing: -.045em; }
+.metric small { color: var(--slate); }
+.warning-list { margin: 1rem 0 0; padding: 0; list-style: none; }
+.warning-list li { background: var(--amber-soft); border-left: 4px solid var(--amber); color: #6e4000; margin-top: .55rem; padding: .65rem .75rem; }
+.warning-list li.alert { background: var(--red-soft); border-left-color: var(--red); color: #7e1a14; }
+details { margin-top: .9rem; border-top: 1px solid var(--line); padding-top: .8rem; }
+summary { cursor: pointer; font-weight: 800; }
+.comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.model-card { border: 1px solid var(--line); border-radius: .8rem; padding: 1rem; }
+.model-card h3 { margin: 0 0 .2rem; }
+.model-card dl { display: grid; grid-template-columns: 1fr auto; gap: .35rem .8rem; margin: .8rem 0 0; font-size: .9rem; }
+.model-card dt { color: var(--slate); }
+.model-card dd { margin: 0; font-weight: 750; text-align: right; }
+.source { color: var(--slate); font-size: .78rem; margin-top: .75rem; }
+.source a { word-break: break-word; }
+.empty { border: 1px dashed #a9bec9; border-radius: .8rem; color: var(--slate); padding: 1rem; text-align: center; }
+.footer { max-width: 1180px; margin: 1.5rem auto 0; color: var(--slate); font-size: .82rem; }
+@media (max-width: 850px) { .grid.three, .grid.two, .comparison { grid-template-columns: 1fr; } .form-grid, .form-grid.compact, .appliance .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .hero { padding-bottom: 1.6rem; } }
+@media (max-width: 520px) { .topline { align-items: start; flex-direction: column; } .form-grid, .form-grid.compact, .appliance .form-grid { grid-template-columns: 1fr; } .section-heading { align-items: start; flex-direction: column; } .container { padding-inline: .85rem; } }
+
+</style>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to planner</a>
     <div id="app"></div>
-    <script type="module" src="js/app.js"></script>
+    <script>
+      window.addEventListener('error', (event) => {
+        const detail = document.createElement('pre');
+        detail.id = 'boot-error';
+        detail.textContent = `The planner could not start: ${event.message}`;
+        detail.style.cssText = 'margin:1rem;padding:1rem;background:#fff0ee;color:#b42318;border:1px solid #b42318;white-space:pre-wrap';
+        document.body.append(detail);
+      });
+    </script>
+    <script>
+(() => {
+const DEFAULTS = Object.freeze({
+  batteryVoltage: 12.5,
+  usableFraction: { lithium: 0.95, agm: 0.5 },
+  inverterEfficiency: 0.85,
+  inverterMargin: 0.25,
+  gridVoltage: 230,
+  defaultElectricityRate: 0.6,
+  defaultGasRate: 1.4,
+  defaultSolarYield: 0.7,
+});
+
+const finite = (value) => Number.isFinite(Number(value));
+const number = (value) => {
+  if (value === '' || value === null || value === undefined) return null;
+  return finite(value) ? Number(value) : null;
+};
+const positive = (value) => number(value) !== null && number(value) > 0;
+const round = (value, places = 1) => Number(value.toFixed(places));
+
+function resolvePower(values) {
+  const volts = number(values.volts);
+  const amps = number(values.amps);
+  const watts = number(values.watts);
+  const provided = [volts, amps, watts].filter((value) => value !== null && value > 0).length;
+  const errors = [];
+
+  if ([volts, amps, watts].some((value) => value !== null && value <= 0)) {
+    errors.push('Use positive electrical values.');
+  }
+  if (provided < 2) {
+    errors.push('Enter any two of volts, amps, and watts.');
+  }
+  if (errors.length) return { valid: false, errors, volts, amps, watts, derived: null };
+
+  let derived = null;
+  let resolvedVolts = volts;
+  let resolvedAmps = amps;
+  let resolvedWatts = watts;
+  if (volts === null) {
+    resolvedVolts = watts / amps;
+    derived = 'volts';
+  } else if (amps === null) {
+    resolvedAmps = watts / volts;
+    derived = 'amps';
+  } else if (watts === null) {
+    resolvedWatts = volts * amps;
+    derived = 'watts';
+  } else {
+    const expectedWatts = volts * amps;
+    if (Math.abs(expectedWatts - watts) / expectedWatts > 0.01) {
+      errors.push('Volts × amps does not match the entered watts.');
+    }
+  }
+  return {
+    valid: errors.length === 0,
+    errors,
+    volts: resolvedVolts,
+    amps: resolvedAmps,
+    watts: resolvedWatts,
+    derived,
+  };
+}
+
+function calculateAppliance(appliance, assumptions) {
+  const source = appliance.source;
+  const hours = number(appliance.hours);
+  const electricSources = ['battery_dc', 'inverter_ac', 'shore_ac'];
+  const power = resolvePower(appliance);
+  const electricityRate = number(assumptions.electricityRate) ?? DEFAULTS.defaultElectricityRate;
+  const gasRate = number(assumptions.gasRate) ?? DEFAULTS.defaultGasRate;
+  const inverterEfficiency = number(assumptions.inverterEfficiency) ?? DEFAULTS.inverterEfficiency;
+  const batteryVoltage = number(assumptions.batteryVoltage) ?? DEFAULTS.batteryVoltage;
+  const batteryAh = number(assumptions.batteryAh);
+  const usableFraction = number(assumptions.usableFraction);
+  const overridesEnergy = positive(appliance.dailyEnergyWh);
+  const errors = [];
+
+  if (source === 'gas') {
+    const grams = number(appliance.gasGrams);
+    if (!(grams > 0)) errors.push('Enter positive gas use in grams per day.');
+    return {
+      valid: errors.length === 0,
+      errors,
+      source,
+      power: null,
+      energyWh: 0,
+      offGridWh: 0,
+      shoreWatts: 0,
+      gasGrams: grams ?? 0,
+      cost: grams > 0 ? (grams / 1000) * gasRate : 0,
+      singleRuntimeHours: null,
+      note: 'Gas use is excluded from battery and campsite calculations.',
+    };
+  }
+
+  if (!electricSources.includes(source)) {
+    return { valid: false, errors: ['Choose a power source.'], source, energyWh: 0, offGridWh: 0, shoreWatts: 0 };
+  }
+
+  let energyWh = 0;
+  if (overridesEnergy) {
+    energyWh = Number(appliance.dailyEnergyWh);
+  } else {
+    if (!(hours > 0)) errors.push('Enter positive operating hours per day.');
+    if (!power.valid) errors.push(...power.errors);
+    if (!errors.length) energyWh = power.watts * hours;
+  }
+  if (!(inverterEfficiency > 0 && inverterEfficiency <= 1)) errors.push('Inverter efficiency must be between 1% and 100%.');
+  const offGridWh = source === 'battery_dc' ? energyWh : source === 'inverter_ac' ? energyWh / inverterEfficiency : 0;
+  const shoreWatts = source === 'shore_ac' && power.valid ? power.watts : 0;
+  let singleRuntimeHours = null;
+  if (source !== 'shore_ac' && batteryAh > 0 && usableFraction > 0 && power.valid) {
+    const usableWh = batteryAh * batteryVoltage * usableFraction;
+    const batteryDrawWatts = source === 'inverter_ac' ? power.watts / inverterEfficiency : power.watts;
+    singleRuntimeHours = usableWh / batteryDrawWatts;
+  }
+  return {
+    valid: errors.length === 0,
+    errors,
+    source,
+    power,
+    energyWh,
+    offGridWh,
+    shoreWatts,
+    gasGrams: 0,
+    cost: energyWh ? (energyWh / 1000) * electricityRate : 0,
+    singleRuntimeHours,
+    note: overridesEnergy ? 'Daily energy comes from the selected fridge data.' : null,
+  };
+}
+
+function calculatePlan(plan) {
+  const batteryVoltage = number(plan.batteryVoltage) ?? DEFAULTS.batteryVoltage;
+  const batteryAh = number(plan.batteryAh) ?? 0;
+  const usableFraction = number(plan.usableFraction) ?? DEFAULTS.usableFraction.lithium;
+  const tripDays = number(plan.tripDays) ?? 0;
+  const reserveFraction = (number(plan.reservePercent) ?? 0) / 100;
+  const solarWp = number(plan.solarWp) ?? 0;
+  const solarHours = number(plan.solarHours) ?? 0;
+  const solarYield = number(plan.solarYield) ?? DEFAULTS.defaultSolarYield;
+  const hookupAmp = number(plan.hookupAmp) ?? 0;
+  const results = plan.appliances.map((appliance) => calculateAppliance(appliance, {
+    ...plan,
+    batteryVoltage,
+    batteryAh,
+    usableFraction,
+  }));
+  const offGridWh = results.reduce((sum, result) => sum + (result.valid ? result.offGridWh : 0), 0);
+  const dailyCost = results.reduce((sum, result) => sum + (result.valid ? result.cost : 0), 0);
+  const solarWh = solarWp > 0 && solarHours > 0 && solarYield > 0 ? solarWp * solarHours * solarYield : 0;
+  const dailyBalanceWh = solarWh - offGridWh;
+  const requiredStorageWh = Math.max(offGridWh, Math.max(0, offGridWh - solarWh) * tripDays) * (1 + reserveFraction);
+  const usableBatteryWh = batteryAh * batteryVoltage * usableFraction;
+  const requiredUsableAh = requiredStorageWh / batteryVoltage;
+  const requiredNominalAh = usableFraction > 0 ? requiredUsableAh / usableFraction : 0;
+  const inverterLoads = results.filter((result) => result.source === 'inverter_ac' && result.power?.valid);
+  const largestInverterWatts = inverterLoads.reduce((max, result) => Math.max(max, result.power.watts), 0);
+  const recommendedInverterWatts = largestInverterWatts * (1 + DEFAULTS.inverterMargin);
+  const groups = new Map();
+  results.forEach((result, index) => {
+    if (result.source !== 'shore_ac' || !result.shoreWatts) return;
+    const group = plan.appliances[index].simultaneousGroup?.trim();
+    if (!group) return;
+    groups.set(group, (groups.get(group) ?? 0) + result.shoreWatts);
+  });
+  const campsiteGroups = [...groups.entries()].map(([name, watts]) => {
+    const amps = watts / DEFAULTS.gridVoltage;
+    return { name, watts, amps, marginAmps: hookupAmp - amps, ok: hookupAmp > 0 && amps <= hookupAmp };
+  });
+  const ungroupedShoreLoads = plan.appliances
+    .filter((appliance, index) => results[index].source === 'shore_ac' && results[index].shoreWatts && !appliance.simultaneousGroup?.trim())
+    .map((appliance) => appliance.name || 'Unnamed shore load');
+  const errors = results.flatMap((result, index) => result.errors.map((message) => `Appliance ${index + 1}: ${message}`));
+  return {
+    appliances: results,
+    errors,
+    dailyOffGridWh: offGridWh,
+    dailyOffGridAh: offGridWh / batteryVoltage,
+    dailyCost,
+    solarWh,
+    dailyBalanceWh,
+    requiredStorageWh,
+    requiredUsableAh,
+    requiredNominalAh,
+    usableBatteryWh,
+    batteryOk: usableBatteryWh >= requiredStorageWh && requiredStorageWh > 0,
+    recommendedInverterWatts,
+    campsiteGroups,
+    ungroupedShoreLoads,
+  };
+}
+
+const format = {
+  number: (value, digits = 1) => Number(value || 0).toLocaleString('en-GB', { maximumFractionDigits: digits, minimumFractionDigits: digits }),
+  whole: (value) => Math.round(value || 0).toLocaleString('en-GB'),
+  currency: (value) => `€${Number(value || 0).toFixed(2)}`,
+  duration: (hours) => hours === null || !Number.isFinite(hours) ? 'Not available' : hours < 24 ? `${format.number(hours)} h` : `${format.number(hours / 24)} days`,
+};
+
+globalThis.RVEngine = { DEFAULTS, calculateAppliance, calculatePlan, format, resolvePower };
+
+})();
+</script>
+<script>
+(() => {
+const source = {
+  id: 'thetford-12v-2026-nl',
+  title: 'Thetford 12V refrigerators, 2026 product range',
+  url: 'https://www.thetford.com/app/uploads/2024/07/7.1_Thetford_12V-Refrigerators_2026_NL_LR.pdf',
+  sourceDate: '2025-07',
+  checkedDate: '2026-08-14',
+  basis: 'IEC 62552-2020, as stated in the brochure',
+};
+
+const n4000Source = {
+  id: 'thetford-n4000-support',
+  title: 'Thetford N4000 series support and technical specifications',
+  url: 'https://www.thetford.com/nl/welkom-bij-thetford-support/n4000-serie/',
+  sourceDate: '2026-08-14',
+  checkedDate: '2026-08-14',
+  basis: 'IEC 62552-2020, as stated in the linked technical specification',
+};
+
+const compressor = (id, name, volumeLitres, dailyKwh) => ({
+  id, name, category: 'compressor', volumeLitres, dailyKwh,
+  supportedModes: ['battery_dc'], validationStatus: 'verified', source,
+});
+const absorption = (id, name, volumeLitres, dailyKwh, gasGramsPerDay, dcWatts) => ({
+  id, name, category: 'absorption', volumeLitres, dailyKwh, gasGramsPerDay, dcWatts,
+  supportedModes: ['battery_dc', 'shore_ac', 'gas'], validationStatus: 'verified', source: n4000Source,
+});
+
+const FRIDGES = Object.freeze([
+  compressor('T1090-E', 'T1090-E', 84, 0.35),
+  compressor('T2095-E', 'T2095-E', 90, 0.36),
+  compressor('T2120-C', 'T2120-C', 119, 0.45),
+  compressor('T2138-C', 'T2138-C', 138, 0.50),
+  compressor('T2152-C', 'T2152-C', 150, 0.46),
+  compressor('T2160-C', 'T2160-C', 158, 0.56),
+  compressor('T2175-C', 'T2175-C', 174, 0.56),
+  absorption('N4080-E+', 'N4080-E+', 71, 2.6, 270, 140),
+  absorption('N4090-E+', 'N4090-E+', 78, 2.9, 300, 140),
+  absorption('N4141-E+', 'N4141-E+', 135, 4.5, 468, 205),
+  absorption('N4142-E+', 'N4142-E+', 137, 4.5, 468, 205),
+  absorption('N4145-E+', 'N4145-E+', 136, 4.3, 437, 205),
+  absorption('N4150-E+', 'N4150-E+', 145, 4.3, 437, 205),
+  absorption('N4170-E+', 'N4170-E+', 156, 4.3, 437, 205),
+  absorption('N4175-E+', 'N4175-E+', 165, 4.3, 437, 205),
+]);
+
+const fridgeById = (id) => FRIDGES.find((fridge) => fridge.id === id);
+
+globalThis.RVFridges = { FRIDGES, fridgeById };
+
+})();
+</script>
+<script>
+(() => {
+const { DEFAULTS: defaults, calculateAppliance, calculatePlan, format } = globalThis.RVEngine;
+const { FRIDGES, fridgeById } = globalThis.RVFridges;
+
+const app = document.querySelector('#app');
+const copy = (value) => JSON.parse(JSON.stringify(value));
+const blankAppliance = () => ({ name: '', source: 'battery_dc', volts: '', amps: '', watts: '', hours: '', dailyEnergyWh: '', gasGrams: '', simultaneousGroup: '' });
+const state = {
+  mode: 'plan',
+  plan: {
+    tripDays: 3, reservePercent: 20, batteryAh: 120, batteryType: 'lithium', inverterRating: 1000,
+    inverterEfficiency: defaults.inverterEfficiency, solarWp: 200, solarHours: 3, solarYield: defaults.defaultSolarYield,
+    hookupAmp: 10, electricityRate: defaults.defaultElectricityRate, gasRate: defaults.defaultGasRate,
+    batteryVoltage: defaults.batteryVoltage, appliances: [{ name: 'LED lighting', source: 'battery_dc', volts: 12.5, amps: 2, watts: '', hours: 4, dailyEnergyWh: '', gasGrams: '', simultaneousGroup: '' }],
+  },
+  quick: { name: 'Appliance', source: 'battery_dc', volts: 12.5, amps: '', watts: '', hours: 1, dailyEnergyWh: '', gasGrams: '', simultaneousGroup: '' },
+  fridge: { selectedId: 'T2120-C', powerMode: 'battery_dc', leftId: 'T2120-C', rightId: 'N4141-E+' },
+};
+
+const escape = (value) => String(value ?? '').replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
+const selected = (condition) => condition ? ' selected' : '';
+const checked = (condition) => condition ? ' checked' : '';
+const numberValue = (value) => value ?? '';
+const usableFraction = () => state.plan.batteryType === 'agm' ? defaults.usableFraction.agm : defaults.usableFraction.lithium;
+const planAssumptions = () => ({ ...state.plan, usableFraction: usableFraction() });
+const sourceOptions = (value) => `
+  <option value="battery_dc"${selected(value === 'battery_dc')}>12 V battery</option>
+  <option value="inverter_ac"${selected(value === 'inverter_ac')}>230 V via inverter</option>
+  <option value="shore_ac"${selected(value === 'shore_ac')}>230 V campsite only</option>
+  <option value="gas"${selected(value === 'gas')}>Gas</option>`;
+const status = (kind, text) => `<span class="status ${kind}">${text}</span>`;
+
+function applianceInputs(appliance, index, scope) {
+  const gas = appliance.source === 'gas';
+  const energyOverride = appliance.dailyEnergyWh !== '' && appliance.dailyEnergyWh !== undefined;
+  return `
+    <div class="appliance" data-appliance="${index}" data-scope="${scope}">
+      <div class="appliance-top"><strong>${scope === 'plan' ? `Load ${index + 1}` : 'Appliance details'}</strong>${scope === 'plan' ? '<button class="button-danger remove-appliance" type="button">Remove</button>' : ''}</div>
+      <div class="form-grid">
+        <label>Name<input data-appliance-key="name" value="${escape(appliance.name)}" placeholder="e.g. kettle"></label>
+        <label>Power source<select data-appliance-key="source">${sourceOptions(appliance.source)}</select></label>
+        <label>Volts<input data-appliance-key="volts" inputmode="decimal" value="${escape(numberValue(appliance.volts))}" ${gas || energyOverride ? 'disabled' : ''} placeholder="V"></label>
+        <label>Amps<input data-appliance-key="amps" inputmode="decimal" value="${escape(numberValue(appliance.amps))}" ${gas || energyOverride ? 'disabled' : ''} placeholder="A"></label>
+        <label>Watts<input data-appliance-key="watts" inputmode="decimal" value="${escape(numberValue(appliance.watts))}" ${gas || energyOverride ? 'disabled' : ''} placeholder="W"></label>
+        <label>${gas ? 'Gas use per day' : energyOverride ? 'Daily energy' : 'Hours per day'}<input data-appliance-key="${gas ? 'gasGrams' : energyOverride ? 'dailyEnergyWh' : 'hours'}" inputmode="decimal" value="${escape(numberValue(gas ? appliance.gasGrams : energyOverride ? appliance.dailyEnergyWh : appliance.hours))}" ${energyOverride ? 'disabled' : ''} placeholder="${gas ? 'g' : energyOverride ? 'Wh' : 'h'}"></label>
+        <label>Used together group<input data-appliance-key="simultaneousGroup" value="${escape(appliance.simultaneousGroup)}" ${appliance.source !== 'shore_ac' ? 'disabled' : ''} placeholder="e.g. Breakfast"></label>
+      </div>
+      ${gas ? '<p class="inline-note">Gas cost is shown, but gas use is deliberately excluded from battery and campsite results.</p>' : energyOverride ? '<p class="inline-note">This selected fridge uses a source-backed daily-energy value. The V/A/W fields are intentionally not estimated.</p>' : '<p class="inline-note">Enter any two of V, A and W. The third is calculated. Give shore appliances a group only if they may be used at the same time.</p>'}
+    </div>`;
+}
+
+function renderHeader() {
+  return `
+    <header class="hero">
+      <div class="topline"><span class="pilot">Public pilot</span><span>No account. No saved data. Planning guidance only.</span></div>
+      <div class="topline"><div><h1>Plan your RV energy with fewer surprises.</h1><p>Bring your fridge, appliances, battery, solar and campsite connection into one honest energy picture.</p></div></div>
+      <nav class="nav" aria-label="Planner journeys">
+        <button data-mode="plan" class="${state.mode === 'plan' ? 'active' : ''}" type="button">Plan my RV</button>
+        <button data-mode="quick" class="${state.mode === 'quick' ? 'active' : ''}" type="button">Check an appliance</button>
+        <button data-mode="fridges" class="${state.mode === 'fridges' ? 'active' : ''}" type="button">Compare fridges</button>
+      </nav>
+    </header>`;
+}
+
+function renderQuick() {
+  const result = calculateAppliance(state.quick, { ...planAssumptions(), usableFraction: usableFraction() });
+  const power = result.power;
+  const resultContent = result.valid ? `
+    <div class="grid three results">
+      <div class="metric"><span class="eyebrow">Energy per day</span><div class="value">${format.whole(result.energyWh)} Wh</div><small>${format.number(result.energyWh / 1000, 2)} kWh, ${format.currency(result.cost)}</small></div>
+      <div class="metric"><span class="eyebrow">Battery draw</span><div class="value">${format.number(result.offGridWh / state.plan.batteryVoltage)} Ah</div><small>${result.source === 'shore_ac' ? 'Campsite-only load, excluded from battery sizing.' : 'Includes inverter loss where relevant.'}</small></div>
+      <div class="metric"><span class="eyebrow">Single-load runtime</span><div class="value">${format.duration(result.singleRuntimeHours)}</div><small>This is one appliance alone, not whole-RV endurance.</small></div>
+    </div>
+    <div class="card results"><div class="section-heading"><div><p class="eyebrow">Calculated values</p><h3>${format.number(power?.volts)} V · ${format.number(power?.amps)} A · ${format.number(power?.watts)} W</h3></div>${power?.derived ? status('estimate', `${power.derived} calculated`) : status('ok', 'values agree')}</div><p>${result.note ?? 'The cost uses your electricity rate from the planner assumptions.'}</p></div>` : `<ul class="warning-list">${result.errors.map((message) => `<li class="alert">${escape(message)}</li>`).join('')}</ul>`;
+  return `
+    <section id="main" class="view ${state.mode === 'quick' ? 'active' : ''}">
+      <div class="section-heading"><div><p class="eyebrow">Quick check</p><h2>Check one appliance without losing the bigger picture.</h2><p>The same calculation rules are used in the full plan. Results are estimates, not an installation approval.</p></div></div>
+      <div class="card form-card">${applianceInputs(state.quick, 0, 'quick')}</div>
+      ${resultContent}
+    </section>`;
+}
+
+function renderPlanResults(result) {
+  const hasOffGrid = result.dailyOffGridWh > 0;
+  const batteryStatus = !hasOffGrid ? status('warn', 'Add an off-grid load') : result.batteryOk ? status('ok', 'Current battery meets this estimate') : status('alert', 'Battery capacity gap');
+  const batteryAction = !hasOffGrid ? 'Add a 12 V or inverter-powered appliance to calculate a battery requirement.' : result.batteryOk ? 'Keep a practical reserve and verify appliance ratings before relying on the result.' : `Consider at least ${format.whole(result.requiredNominalAh)} Ah nominal ${state.plan.batteryType === 'agm' ? 'AGM' : 'lithium'} capacity under these assumptions.`;
+  const campsiteContent = result.campsiteGroups.length ? result.campsiteGroups.map((group) => `<li class="${group.ok ? '' : 'alert'}"><strong>${escape(group.name)}</strong>: ${format.whole(group.watts)} W, ${format.number(group.amps)} A. ${group.ok ? `${format.number(group.marginAmps)} A margin.` : `${format.number(Math.abs(group.marginAmps))} A above the selected connection.`}</li>`).join('') : '<li>Assign shore loads that may run together to a named group to check their combined campsite demand.</li>';
+  return `
+    <section class="results" aria-live="polite">
+      <div class="section-heading"><div><p class="eyebrow">Your energy picture</p><h2>Read these results in order.</h2><p>Battery and solar describe off-grid use. Campsite checks describe only the groups you define as simultaneous.</p></div></div>
+      ${result.errors.length ? `<ul class="warning-list">${result.errors.map((message) => `<li class="alert">${escape(message)}</li>`).join('')}</ul>` : ''}
+      <div class="grid three">
+        <div class="metric"><span class="eyebrow">Daily off-grid use</span><div class="value">${format.number(result.dailyOffGridAh)} Ah</div><small>${format.whole(result.dailyOffGridWh)} Wh from 12 V and inverter loads.</small></div>
+        <div class="metric"><span class="eyebrow">Battery for this trip</span><div class="value">${format.whole(result.requiredNominalAh)} Ah</div><small>Nominal ${state.plan.batteryType === 'agm' ? 'AGM' : 'lithium'} capacity, including reserve.</small></div>
+        <div class="metric"><span class="eyebrow">Inverter to consider</span><div class="value">${format.whole(result.recommendedInverterWatts)} W</div><small>Largest inverter load plus 25% planning margin.</small></div>
+      </div>
+      <div class="grid two results">
+        <div class="card"><div class="section-heading"><div><p class="eyebrow">Battery check</p><h3>${batteryStatus}</h3></div></div><p>${batteryAction}</p><p class="hint">Entered usable energy: ${format.whole(result.usableBatteryWh)} Wh. Estimated storage requirement: ${format.whole(result.requiredStorageWh)} Wh.</p></div>
+        <div class="card"><div class="section-heading"><div><p class="eyebrow">Solar recovery</p><h3>${status('estimate', 'Daily estimate')}</h3></div></div><p>${format.whole(result.solarWh)} Wh/day estimated recovery. Daily balance: ${result.dailyBalanceWh >= 0 ? '+' : ''}${format.whole(result.dailyBalanceWh)} Wh.</p><p class="hint">Weather, shade, panel angle and season can change this materially. It is never a battery guarantee.</p></div>
+      </div>
+      <div class="card results"><p class="eyebrow">Campsite hookup, ${escape(state.plan.hookupAmp)} A selected</p><h3>Combined groups, not isolated appliances</h3><ul class="warning-list">${campsiteContent}${result.ungroupedShoreLoads.length ? `<li class="alert">These shore loads have no simultaneous-use group: ${escape(result.ungroupedShoreLoads.join(', '))}. Add one before relying on campsite capacity.</li>` : ''}</ul></div>
+      <details><summary>Show calculation assumptions</summary><p>Battery planning uses ${escape(state.plan.batteryVoltage)} V, ${state.plan.batteryType === 'agm' ? '50%' : '95%'} usable capacity and ${format.number(state.plan.inverterEfficiency * 100, 0)}% inverter efficiency. Single-load runtime is never used as the whole-RV endurance result.</p></details>
+    </section>`;
+}
+
+function renderPlan() {
+  const result = calculatePlan(planAssumptions());
+  return `
+    <section id="main" class="view ${state.mode === 'plan' ? 'active' : ''}">
+      <div class="section-heading"><div><p class="eyebrow">Plan my RV</p><h2>Start with the trip, then add the equipment.</h2><p>Every result states what it does and does not cover, so a quick estimate does not become a false promise.</p></div></div>
+      <div class="grid three">
+        <article class="card step"><p class="eyebrow">1. The trip</p><h3>How long before charging or hookup?</h3><p>Choose the planning period and a practical reserve.</p></article>
+        <article class="card step"><p class="eyebrow">2. The loads</p><h3>What actually uses energy?</h3><p>Add the fridge and every relevant electrical appliance.</p></article>
+        <article class="card step"><p class="eyebrow">3. The setup</p><h3>What can support it?</h3><p>Check battery, solar, inverter and campsite connection together.</p></article>
+      </div>
+      <section class="card form-card"><p class="eyebrow">Trip context</p><div class="form-grid compact">
+        <label>Days between charging or hookup<input data-plan-key="tripDays" inputmode="decimal" value="${escape(state.plan.tripDays)}"></label>
+        <label>Energy reserve<input data-plan-key="reservePercent" inputmode="decimal" value="${escape(state.plan.reservePercent)}"><span class="hint">Percent</span></label>
+        <label>Electricity price<input data-plan-key="electricityRate" inputmode="decimal" value="${escape(state.plan.electricityRate)}"><span class="hint">Euro per kWh</span></label>
+      </div></section>
+      <section class="card form-card"><div class="section-heading"><div><p class="eyebrow">Appliances</p><h3>Add realistic daily use</h3></div><button class="button add-appliance" type="button">Add appliance</button></div>
+        ${state.plan.appliances.map((appliance, index) => applianceInputs(appliance, index, 'plan')).join('')}
+        <div class="actions"><button class="button-secondary fridge-add" type="button">Choose a verified Thetford fridge</button><span class="hint">This opens the model selector and adds the chosen mode to this plan.</span></div>
+      </section>
+      <section class="card form-card"><p class="eyebrow">Your electrical setup</p><div class="form-grid">
+        <label>Battery size<input data-plan-key="batteryAh" inputmode="decimal" value="${escape(state.plan.batteryAh)}"><span class="hint">Nominal Ah</span></label>
+        <label>Battery type<select data-plan-key="batteryType"><option value="lithium"${selected(state.plan.batteryType === 'lithium')}>Lithium</option><option value="agm"${selected(state.plan.batteryType === 'agm')}>AGM / lead-acid</option></select></label>
+        <label>Inverter rating<input data-plan-key="inverterRating" inputmode="decimal" value="${escape(state.plan.inverterRating)}"><span class="hint">Continuous W</span></label>
+        <label>Campsite connection<select data-plan-key="hookupAmp">${[4, 6, 10, 16].map((amp) => `<option value="${amp}"${selected(Number(state.plan.hookupAmp) === amp)}>${amp} A</option>`).join('')}</select></label>
+      </div>
+      <details><summary>Advanced planning assumptions</summary><div class="form-grid compact"><label>Planning voltage<input data-plan-key="batteryVoltage" inputmode="decimal" value="${escape(state.plan.batteryVoltage)}"><span class="hint">V, default 12.5</span></label><label>Inverter efficiency<input data-plan-key="inverterEfficiency" inputmode="decimal" value="${escape(state.plan.inverterEfficiency)}"><span class="hint">0 to 1, default 0.85</span></label><label>Solar array<input data-plan-key="solarWp" inputmode="decimal" value="${escape(state.plan.solarWp)}"><span class="hint">Wp</span></label><label>Peak-sun hours<input data-plan-key="solarHours" inputmode="decimal" value="${escape(state.plan.solarHours)}"><span class="hint">Per day</span></label><label>Solar yield factor<input data-plan-key="solarYield" inputmode="decimal" value="${escape(state.plan.solarYield)}"><span class="hint">0 to 1</span></label><label>Gas price<input data-plan-key="gasRate" inputmode="decimal" value="${escape(state.plan.gasRate)}"><span class="hint">Euro per kg</span></label></div></details>
+      </section>
+      ${renderPlanResults(result)}
+    </section>`;
+}
+
+function fridgeOptions(value, category) {
+  return FRIDGES.filter((fridge) => !category || fridge.category === category).map((fridge) => `<option value="${fridge.id}"${selected(fridge.id === value)}>${fridge.name} · ${fridge.volumeLitres} L</option>`).join('');
+}
+
+function fridgeCard(fridge) {
+  if (!fridge) return '<div class="empty">Choose a fridge.</div>';
+  const modeInfo = fridge.category === 'compressor' ? '12 V compressor' : 'Absorption, select a power source before adding';
+  return `<article class="model-card"><p class="eyebrow">${escape(modeInfo)}</p><h3>${escape(fridge.name)}</h3><p>${fridge.volumeLitres} L · ${format.number(fridge.dailyKwh, 2)} kWh/24h</p><dl><dt>Data status</dt><dd>${status('ok', fridge.validationStatus)}</dd><dt>Consumption basis</dt><dd>${escape(fridge.source.basis)}</dd>${fridge.gasGramsPerDay ? `<dt>Gas use</dt><dd>${fridge.gasGramsPerDay} g/24h</dd>` : ''}</dl><p class="source">Source checked ${escape(fridge.source.checkedDate)}: <a href="${escape(fridge.source.url)}" target="_blank" rel="noreferrer">${escape(fridge.source.title)}</a></p></article>`;
+}
+
+function addFridgeToPlan() {
+  const fridge = fridgeById(state.fridge.selectedId);
+  if (!fridge || fridge.validationStatus !== 'verified') return;
+  const mode = fridge.category === 'compressor' ? 'battery_dc' : state.fridge.powerMode;
+  const appliance = blankAppliance();
+  appliance.name = fridge.name;
+  appliance.source = mode;
+  if (mode === 'gas') {
+    appliance.gasGrams = fridge.gasGramsPerDay;
+  } else if (mode === 'shore_ac') {
+    appliance.dailyEnergyWh = fridge.dailyKwh * 1000;
+    appliance.volts = 230;
+    appliance.watts = Math.round((fridge.dailyKwh * 1000) / 24);
+  } else if (fridge.category === 'compressor') {
+    appliance.dailyEnergyWh = fridge.dailyKwh * 1000;
+    appliance.volts = 12.5;
+  } else {
+    appliance.volts = 12.5;
+    appliance.watts = fridge.dcWatts;
+    appliance.hours = 24;
+  }
+  state.plan.appliances.push(appliance);
+  state.mode = 'plan';
+  render();
+}
+
+function renderFridges() {
+  const current = fridgeById(state.fridge.selectedId);
+  const left = fridgeById(state.fridge.leftId);
+  const right = fridgeById(state.fridge.rightId);
+  const electricityRate = Number(state.plan.electricityRate) || defaults.defaultElectricityRate;
+  const gasRate = Number(state.plan.gasRate) || defaults.defaultGasRate;
+  const comparisonCost = (fridge) => fridge.category === 'absorption' ? (fridge.gasGramsPerDay / 1000) * gasRate : fridge.dailyKwh * electricityRate;
+  return `
+    <section id="main" class="view ${state.mode === 'fridges' ? 'active' : ''}">
+      <div class="section-heading"><div><p class="eyebrow">Verified Thetford model data</p><h2>Compare fridges, then add one to the energy plan.</h2><p>Only source-backed models are listed. Older values from the previous tool are not carried forward until their source is checked.</p></div></div>
+      <div class="card form-card"><div class="form-grid compact"><label>Fridge model<select data-fridge-key="selectedId">${fridgeOptions(state.fridge.selectedId)}</select></label><label>Power mode<select data-fridge-key="powerMode" ${current?.category === 'compressor' ? 'disabled' : ''}>${sourceOptions(state.fridge.powerMode).replace('<option value="inverter_ac"', '<option value="inverter_ac" disabled').replace('<option value="shore_ac"', '<option value="shore_ac"').replace('<option value="gas"', '<option value="gas"')}</select><span class="hint">Compressor models use 12 V battery energy.</span></label><div class="actions"><button class="button fridge-add" type="button">Add to my RV plan</button></div></div>${fridgeCard(current)}</div>
+      <div class="section-heading"><div><p class="eyebrow">Side-by-side comparison</p><h2>Daily running implication</h2><p>Prices come from the plan assumptions. Compare cost only when the chosen power sources are genuinely available.</p></div></div>
+      <div class="comparison"><div class="card"><label>First model<select data-fridge-key="leftId">${fridgeOptions(state.fridge.leftId)}</select></label>${fridgeCard(left)}<p class="inline-note">Indicative daily energy cost: ${format.currency(comparisonCost(left))}</p></div><div class="card"><label>Second model<select data-fridge-key="rightId">${fridgeOptions(state.fridge.rightId)}</select></label>${fridgeCard(right)}<p class="inline-note">Indicative daily energy or gas cost: ${format.currency(comparisonCost(right))}</p></div></div>
+    </section>`;
+}
+
+function render() {
+  app.innerHTML = `<div class="shell">${renderHeader()}<main class="container"><div class="notice"><div>ⓘ</div><div><strong>Educational planning pilot</strong>It does not design wiring, fuses, BMS protection or an installation. Check equipment documentation and a qualified installer before making a decision.</div></div>${renderPlan()}${renderQuick()}${renderFridges()}<footer class="footer">RV Energy Planner, pilot. Refreshing the page clears your inputs by design.</footer></main></div>`;
+  bindEvents();
+}
+
+function bindEvents() {
+  document.querySelectorAll('[data-mode]').forEach((button) => button.addEventListener('click', () => { state.mode = button.dataset.mode; render(); }));
+  document.querySelectorAll('[data-plan-key]').forEach((field) => field.addEventListener('change', () => { state.plan[field.dataset.planKey] = field.value; render(); }));
+  document.querySelectorAll('[data-appliance]').forEach((row) => {
+    const index = Number(row.dataset.appliance);
+    const target = row.dataset.scope === 'quick' ? state.quick : state.plan.appliances[index];
+    row.querySelectorAll('[data-appliance-key]').forEach((field) => field.addEventListener('change', () => { target[field.dataset.applianceKey] = field.value; render(); }));
+  });
+  document.querySelector('.add-appliance')?.addEventListener('click', () => { state.plan.appliances.push(blankAppliance()); render(); });
+  document.querySelectorAll('.remove-appliance').forEach((button) => button.addEventListener('click', () => { const row = button.closest('[data-appliance]'); state.plan.appliances.splice(Number(row.dataset.appliance), 1); render(); }));
+  document.querySelectorAll('[data-fridge-key]').forEach((field) => field.addEventListener('change', () => { state.fridge[field.dataset.fridgeKey] = field.value; if (field.dataset.fridgeKey === 'selectedId' && fridgeById(field.value)?.category === 'compressor') state.fridge.powerMode = 'battery_dc'; render(); }));
+  document.querySelectorAll('.fridge-add').forEach((button) => button.addEventListener('click', addFridgeToPlan));
+}
+
+render();
+
+})();
+</script>
   </body>
 </html>

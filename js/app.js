@@ -1,5 +1,5 @@
-import { DEFAULTS, calculateAppliance, calculatePlan, format } from './engine.js';
-import { FRIDGES, fridgeById } from './fridges.js';
+const { DEFAULTS: defaults, calculateAppliance, calculatePlan, format } = globalThis.RVEngine;
+const { FRIDGES, fridgeById } = globalThis.RVFridges;
 
 const app = document.querySelector('#app');
 const copy = (value) => JSON.parse(JSON.stringify(value));
@@ -8,9 +8,9 @@ const state = {
   mode: 'plan',
   plan: {
     tripDays: 3, reservePercent: 20, batteryAh: 120, batteryType: 'lithium', inverterRating: 1000,
-    inverterEfficiency: DEFAULTS.inverterEfficiency, solarWp: 200, solarHours: 3, solarYield: DEFAULTS.defaultSolarYield,
-    hookupAmp: 10, electricityRate: DEFAULTS.defaultElectricityRate, gasRate: DEFAULTS.defaultGasRate,
-    batteryVoltage: DEFAULTS.batteryVoltage, appliances: [{ name: 'LED lighting', source: 'battery_dc', volts: 12.5, amps: 2, watts: '', hours: 4, dailyEnergyWh: '', gasGrams: '', simultaneousGroup: '' }],
+    inverterEfficiency: defaults.inverterEfficiency, solarWp: 200, solarHours: 3, solarYield: defaults.defaultSolarYield,
+    hookupAmp: 10, electricityRate: defaults.defaultElectricityRate, gasRate: defaults.defaultGasRate,
+    batteryVoltage: defaults.batteryVoltage, appliances: [{ name: 'LED lighting', source: 'battery_dc', volts: 12.5, amps: 2, watts: '', hours: 4, dailyEnergyWh: '', gasGrams: '', simultaneousGroup: '' }],
   },
   quick: { name: 'Appliance', source: 'battery_dc', volts: 12.5, amps: '', watts: '', hours: 1, dailyEnergyWh: '', gasGrams: '', simultaneousGroup: '' },
   fridge: { selectedId: 'T2120-C', powerMode: 'battery_dc', leftId: 'T2120-C', rightId: 'N4141-E+' },
@@ -20,7 +20,7 @@ const escape = (value) => String(value ?? '').replace(/[&<>'"]/g, (character) =>
 const selected = (condition) => condition ? ' selected' : '';
 const checked = (condition) => condition ? ' checked' : '';
 const numberValue = (value) => value ?? '';
-const usableFraction = () => state.plan.batteryType === 'agm' ? DEFAULTS.usableFraction.agm : DEFAULTS.usableFraction.lithium;
+const usableFraction = () => state.plan.batteryType === 'agm' ? defaults.usableFraction.agm : defaults.usableFraction.lithium;
 const planAssumptions = () => ({ ...state.plan, usableFraction: usableFraction() });
 const sourceOptions = (value) => `
   <option value="battery_dc"${selected(value === 'battery_dc')}>12 V battery</option>
@@ -173,8 +173,8 @@ function renderFridges() {
   const current = fridgeById(state.fridge.selectedId);
   const left = fridgeById(state.fridge.leftId);
   const right = fridgeById(state.fridge.rightId);
-  const electricityRate = Number(state.plan.electricityRate) || DEFAULTS.defaultElectricityRate;
-  const gasRate = Number(state.plan.gasRate) || DEFAULTS.defaultGasRate;
+  const electricityRate = Number(state.plan.electricityRate) || defaults.defaultElectricityRate;
+  const gasRate = Number(state.plan.gasRate) || defaults.defaultGasRate;
   const comparisonCost = (fridge) => fridge.category === 'absorption' ? (fridge.gasGramsPerDay / 1000) * gasRate : fridge.dailyKwh * electricityRate;
   return `
     <section id="main" class="view ${state.mode === 'fridges' ? 'active' : ''}">

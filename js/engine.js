@@ -1,4 +1,4 @@
-export const DEFAULTS = Object.freeze({
+const DEFAULTS = Object.freeze({
   batteryVoltage: 12.5,
   usableFraction: { lithium: 0.95, agm: 0.5 },
   inverterEfficiency: 0.85,
@@ -17,7 +17,7 @@ const number = (value) => {
 const positive = (value) => number(value) !== null && number(value) > 0;
 const round = (value, places = 1) => Number(value.toFixed(places));
 
-export function resolvePower(values) {
+function resolvePower(values) {
   const volts = number(values.volts);
   const amps = number(values.amps);
   const watts = number(values.watts);
@@ -61,7 +61,7 @@ export function resolvePower(values) {
   };
 }
 
-export function calculateAppliance(appliance, assumptions) {
+function calculateAppliance(appliance, assumptions) {
   const source = appliance.source;
   const hours = number(appliance.hours);
   const electricSources = ['battery_dc', 'inverter_ac', 'shore_ac'];
@@ -129,7 +129,7 @@ export function calculateAppliance(appliance, assumptions) {
   };
 }
 
-export function calculatePlan(plan) {
+function calculatePlan(plan) {
   const batteryVoltage = number(plan.batteryVoltage) ?? DEFAULTS.batteryVoltage;
   const batteryAh = number(plan.batteryAh) ?? 0;
   const usableFraction = number(plan.usableFraction) ?? DEFAULTS.usableFraction.lithium;
@@ -190,9 +190,11 @@ export function calculatePlan(plan) {
   };
 }
 
-export const format = {
+const format = {
   number: (value, digits = 1) => Number(value || 0).toLocaleString('en-GB', { maximumFractionDigits: digits, minimumFractionDigits: digits }),
   whole: (value) => Math.round(value || 0).toLocaleString('en-GB'),
   currency: (value) => `€${Number(value || 0).toFixed(2)}`,
   duration: (hours) => hours === null || !Number.isFinite(hours) ? 'Not available' : hours < 24 ? `${format.number(hours)} h` : `${format.number(hours / 24)} days`,
 };
+
+globalThis.RVEngine = { DEFAULTS, calculateAppliance, calculatePlan, format, resolvePower };

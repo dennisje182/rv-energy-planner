@@ -25,7 +25,7 @@ const absorption = (id, name, volumeLitres, dailyKwh, gasGramsPerDay, dcWatts) =
   supportedModes: ['battery_dc', 'shore_ac', 'gas'], validationStatus: 'verified', source: n4000Source,
 });
 
-export const FRIDGES = Object.freeze([
+const FRIDGES = Object.freeze([
   compressor('T1090-E', 'T1090-E', 84, 0.35),
   compressor('T2095-E', 'T2095-E', 90, 0.36),
   compressor('T2120-C', 'T2120-C', 119, 0.45),
@@ -43,4 +43,6 @@ export const FRIDGES = Object.freeze([
   absorption('N4175-E+', 'N4175-E+', 165, 4.3, 437, 205),
 ]);
 
-export const fridgeById = (id) => FRIDGES.find((fridge) => fridge.id === id);
+const fridgeById = (id) => FRIDGES.find((fridge) => fridge.id === id);
+
+globalThis.RVFridges = { FRIDGES, fridgeById };

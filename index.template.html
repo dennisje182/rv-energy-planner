@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A practical RV energy planning pilot for battery, solar, appliances and campsite power.">
+    <title>RV Energy Planner, pilot</title>
+    <!-- STYLES -->
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to planner</a>
+    <div id="app"></div>
+    <script>
+      window.addEventListener('error', (event) => {
+        const detail = document.createElement('pre');
+        detail.id = 'boot-error';
+        detail.textContent = `The planner could not start: ${event.message}`;
+        detail.style.cssText = 'margin:1rem;padding:1rem;background:#fff0ee;color:#b42318;border:1px solid #b42318;white-space:pre-wrap';
+        document.body.append(detail);
+      });
+    </script>
+    <!-- SCRIPTS -->
+  </body>
+</html>

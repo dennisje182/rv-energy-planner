@@ -29,10 +29,16 @@ See [the product scope](docs/PRODUCT_SCOPE.md), [feature inventory](docs/FEATURE
 
 ## Development
 
-The pilot is plain HTML, CSS and ES modules. No source code from the earlier calculator repositories is copied here.
+The pilot is readable HTML, CSS and JavaScript. `index.html` is the self-contained release file so it can be opened directly from a local drive. The maintainable source files remain under `css/` and `js/`.
 
 ```
 npm test
+```
+
+After changing source files, rebuild the standalone release before committing:
+
+```
+powershell -ExecutionPolicy Bypass -File tools/build-standalone.ps1
 ```
 
 The GitHub Pages workflow publishes the `main` branch. Before the first public release, make the repository public and set Pages to use **GitHub Actions**.

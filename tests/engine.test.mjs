@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { calculateAppliance, calculatePlan, DEFAULTS, resolvePower } from '../js/engine.js';
+globalThis.window = globalThis;
+await import('../js/engine.js');
+const { calculateAppliance, calculatePlan, DEFAULTS, resolvePower } = globalThis.RVEngine;
 
 const assumptions = { batteryVoltage: 12.5, batteryAh: 100, usableFraction: 0.95, inverterEfficiency: 0.85, electricityRate: 0.6, gasRate: 1.4 };
 
