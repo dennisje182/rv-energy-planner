@@ -1,39 +1,38 @@
 # RV Energy Planner
 
-A clean, private successor project for one coherent RV energy-planning tool.
+A dependency-free public pilot that brings RV appliance checks, fridge comparison and trip-level energy planning into one browser tool.
 
-## Purpose
+## Use the pilot
 
-Help a user answer two related questions without switching between separate calculators:
+The start page is **Plan my RV**. It guides a user through trip context, appliances, electrical setup and one combined result.
 
-1. **Quick check**: What does a single appliance use, cost, and require from the battery?
-2. **Full RV plan**: Can the combined appliance plan be supported by the selected battery, solar input, and campsite supply?
+- **Plan my RV** calculates daily off-grid use, battery capacity for the chosen trip, solar recovery estimate, inverter sizing indication and combined campsite-load groups.
+- **Check an appliance** calculates the missing value when two of volts, amps and watts are known, then shows cost, battery draw and standalone runtime.
+- **Compare fridges** shows only source-backed Thetford models and adds a chosen operating mode to the plan.
 
-This repository is a new build. Existing calculator repositories remain unchanged and are reference material only.
+The app deliberately stores nothing. Refreshing the page starts a new session.
 
-## Planned capabilities
+## Safety boundary
 
-- Calculate the missing value when any two of volts, amps, and watts are entered.
-- Calculate operating energy, electricity cost, DC battery draw, and single-load runtime.
-- Build a combined appliance plan and calculate total daily energy demand.
-- Compare demand with usable AGM and lithium battery capacity.
-- Model inverter losses for AC loads.
-- Estimate solar recovery, clearly marked as an estimate.
-- Check campsite connection limits.
-- Offer fridge-oriented presets and inputs as part of the same tool.
-- Explain every result, assumption, warning, and limitation.
+This is educational planning guidance, not an electrical installation design or approval. It does not size wiring, fuses or BMS protection, and solar recovery is explicitly an estimate. Check product documentation and the actual installation before deciding.
 
-## Product shape
+## Calculation rules
 
-The tool will have two modes that use the same calculation engine:
+- Planning reference: 12.5 V.
+- Usable battery capacity: 95% for lithium and 50% for AGM / lead-acid.
+- Inverter efficiency: 85% default, editable in the advanced assumptions.
+- Inverter indication: largest entered inverter load plus a 25% planning margin.
+- Campsite checks sum only appliances in the same named simultaneous-use group.
+- Gas and campsite-only loads do not inflate off-grid battery demand.
 
-- **Quick check**, for a single appliance or scenario.
-- **Energy plan**, for the complete RV setup.
+See [the product scope](docs/PRODUCT_SCOPE.md), [feature inventory](docs/FEATURE_INVENTORY.md), and [fridge data register](docs/FRIDGE_DATA_REGISTER.md).
 
-A single source of truth will hold technical assumptions, including battery usable-capacity percentages, voltage reference, inverter efficiency, and calculation limits. The app will not present a single-appliance runtime as though it were the runtime of the entire RV.
+## Development
 
-## Project status
+The pilot is plain HTML, CSS and ES modules. No source code from the earlier calculator repositories is copied here.
 
-Foundation created. No calculator code has been copied or merged.
+```
+npm test
+```
 
-See [docs/PRODUCT_SCOPE.md](docs/PRODUCT_SCOPE.md) and [docs/FEATURE_INVENTORY.md](docs/FEATURE_INVENTORY.md).
+The GitHub Pages workflow publishes the `main` branch. Before the first public release, make the repository public and set Pages to use **GitHub Actions**.
